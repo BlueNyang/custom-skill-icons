@@ -1,4 +1,4 @@
-const icons = require('./dist/icons.json');
+const icons = require('../../dist/icons.json');
 const iconNameList = [...new Set(Object.keys(icons).map(i => i.split('-')[0]))];
 const shortNames = {
   js: 'javascript',
@@ -42,6 +42,7 @@ const shortNames = {
   ghactions: 'githubactions',
   sklearn: 'scikitlearn',
 };
+
 const themedIcons = [
   ...Object.keys(icons)
     .filter(i => i.includes('-light') || i.includes('-dark'))
@@ -90,60 +91,52 @@ function parseShortNames(names, theme = 'dark') {
   });
 }
 
-async function handleRequest(request) {
-  const { pathname, searchParams } = new URL(request.url);
+exports.handler = async (event, _context) => {
+  const {
+    i,
+    icons: iconParamAlt,
+    t,
+    themeAlt,
+    perline,
+  } = event.queryStringParameters || {};
 
-  const path = pathname.replace(/^\/|\/$/g, '');
+  const iconParam = i || iconParamAlt;
+  const theme = t || themeAlt;
+  const perLine = perline || ICONS_PER_LINE;
 
-  if (path === 'icons') {
-    const iconParam = searchParams.get('i') || searchParams.get('icons');
-    if (!iconParam)
-      return new Response("You didn't specify any icons!", { status: 400 });
-    const theme = searchParams.get('t') || searchParams.get('theme');
-    if (theme && theme !== 'dark' && theme !== 'light')
-      return new Response('Theme must be either "light" or "dark"', {
-        status: 400,
-      });
-    const perLine = searchParams.get('perline') || ICONS_PER_LINE;
-    if (isNaN(perLine) || perLine < -1 || perLine > 50)
-      return new Response('Icons per line must be a number between 1 and 50', {
-        status: 400,
-      });
-
-    let iconShortNames = [];
-    if (iconParam === 'all') iconShortNames = iconNameList;
-    else iconShortNames = iconParam.split(',');
-
-    const iconNames = parseShortNames(iconShortNames, theme || undefined);
-    if (!iconNames)
-      return new Response("You didn't format the icons param correctly!", {
-        status: 400,
-      });
-
-    const svg = generateSvg(iconNames, perLine);
-
-    return new Response(svg, { headers: { 'Content-Type': 'image/svg+xml' } });
-  } else if (path === 'api/icons') {
-    return new Response(JSON.stringify(iconNameList), {
-      headers: {
-        'content-type': 'application/json;charset=UTF-8',
-      },
-    });
-  } else if (path === 'api/svgs') {
-    return new Response(JSON.stringify(icons), {
-      headers: {
-        'content-type': 'application/json;charset=UTF-8',
-      },
-    });
-  } else {
-    return fetch(request);
+  if (!iconParam) {
+    return { statusCode: 400, body: "You didn't specify any icons!" };
   }
-}
 
-addEventListener('fetch', event => {
-  event.respondWith(
-    handleRequest(event.request).catch(
-      err => new Response(err.stack, { status: 500 })
-    )
-  );
-});
+  if (theme && theme !== 'dark' && theme !== 'light') {
+    return { statusCode: 400, body: 'Theme must be either "light" or "dark"' };
+  }
+
+  if (isNaN(perLine) || perLine < -1 || perLine > 50) {
+    return {
+      statusCode: 400,
+      body: 'Icons per line must be a number between 1 and 50',
+    };
+  }
+
+  let iconShortNames = [];
+  if (iconParam === 'all') iconShortNames = iconNameList;
+  else iconShortNames = iconParam.split(',');
+
+  const iconNames = parseShortNames(iconShortNames, theme || undefined);
+  if (!iconNames)
+    return {
+      statusCode: 400,
+      body: "You didn't format the icons param correctly!",
+    };
+
+  const svg = generateSvg(iconNames, perLine);
+
+  return {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'image/svg+xml',
+    },
+    body: svg,
+  };
+};
