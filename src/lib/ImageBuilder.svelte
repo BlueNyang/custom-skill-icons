@@ -1,19 +1,25 @@
 <script lang="ts">
   import CopySVG from '../assets/CopySVG.svelte';
   import CopyFillSVG from '../assets/CopyFillSVG.svelte';
-  import { get } from 'svelte/store';
 
   let iconList: string[] = [];
   let copyMouseOver: boolean = false;
   let iconTheme: string = 'default';
   let perLine: number = 15;
 
-  const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || '';
+  let apiBaseUrl: string = 'https://custom-skill-icons.netlify.app';
 
   let currentUrl: string = "/icons?i=";
 
   function handleIconListChange(event: Event) {
     const target = event.target as HTMLInputElement;
+
+    if (target.value.trim() === '') {
+      iconList = [];
+      currentUrl = "/icons?i=";
+      return;
+    }
+
     iconList = target.value.split(',').map(icon => icon.trim()).filter(icon => icon.length > 0);
   }
 
@@ -30,6 +36,11 @@
     if (!isNaN(value) && value >= 1 && value <= 50) {
       perLine = value;
     }
+  }
+
+  function handleServerChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    apiBaseUrl = target.value;
   }
 
   function getResultIconsImage() {
@@ -55,7 +66,7 @@
         No icons selected.
       {:else}
         Response Image:
-        <img src={API_BASE_URL + currentUrl} alt="Generated Icons" class="mx-auto" />
+        <img src={apiBaseUrl + currentUrl} alt="Generated Icons" class="mx-auto" />
       {/if}
     </p>
   </div>
@@ -71,7 +82,7 @@
         <!-- Copy Button -->
         <button
           on:click={() => {
-            navigator.clipboard.writeText(API_BASE_URL + currentUrl);
+            navigator.clipboard.writeText(apiBaseUrl + currentUrl);
           }}
           on:mouseenter={() => {
             copyMouseOver = true;
@@ -145,6 +156,19 @@
           Apply
         </button>
       </div>
+    </div>
+    
+    <!-- Server Selector -->
+    <div class="mt-4 border border-neutral-300 p-4 rounded-lg bg-neutral-50">
+      <label for="serverInput" class="block mb-2 font-bold">Select Server:</label>
+      <select
+        id="serverInput"
+        class="w-full p-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        on:change={handleServerChange}
+      >
+        <option value="https://custom-skill-icons.netlify.app">custom-skill-icons.netlify.app</option>
+        <option value="https://skillicons.dev">skillicons.dev</option>
+      </select>
     </div>
   </div>
 </div>
