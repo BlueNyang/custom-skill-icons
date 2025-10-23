@@ -9,3 +9,6 @@ for (const icon of iconsDir) {
 
 if (!fs.existsSync('./dist')) fs.mkdirSync('./dist');
 fs.writeFileSync('./dist/icons.json', JSON.stringify(icons));
+
+// Copy icons directory to dist for deployment
+fs.cpSync('./icons', './dist/icons', { recursive: true });
