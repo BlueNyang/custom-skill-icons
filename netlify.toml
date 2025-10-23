@@ -1,0 +1,18 @@
+[build]
+  command = "pnpm run build"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/icons"
+  to="/.netlify/functions/icons"
+  status = 200
+  
+[[redirects]]
+  from = "/api/icons"
+  to="/.netlify/functions/api-icons"
+  status = 200
+  
+[[redirects]]
+  from = "/api/svgs"
+  to="/.netlify/functions/api-svgs"
+  status = 200
