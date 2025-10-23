@@ -69,13 +69,13 @@
   async function fetchIconModules() {
     isLoading = true;
     // console.log('아이콘 목록을 불러오는 중입니다...');
-    // const resp = await fetch('');
+    const resp = await fetch('https://custom-skill-icons.netlify.app/api/svgs');
 
-    // if (!resp.ok) {
-    //   console.error('아이콘 목록을 불러오는 중 오류가 발생했습니다.');
-    //   isLoading = false;
-    //   return;
-    // }
+    if (!resp.ok) {
+      console.error('아이콘 목록을 불러오는 중 오류가 발생했습니다.');
+      isLoading = false;
+      return;
+    }
 
     // console.log(resp);
 
