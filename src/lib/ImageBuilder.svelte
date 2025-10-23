@@ -1,15 +1,16 @@
 <script lang="ts">
   import CopySVG from '../assets/CopySVG.svelte';
   import CopyFillSVG from '../assets/CopyFillSVG.svelte';
+  import { get } from 'svelte/store';
 
   let iconList: string[] = [];
-  let copyMouseOver = false;
+  let copyMouseOver: boolean = false;
   let iconTheme: string = 'default';
   let perLine: number = 15;
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+  const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || '';
 
-  $: currentUrl = `/icons?i=${iconList.join(',')}${iconTheme === 'default' ? '' : `&t=${iconTheme}`}${perLine !== 15 ? `&perline=${perLine}` : ''}`;
+  let currentUrl: string = "/icons?i=";
 
   function handleIconListChange(event: Event) {
     const target = event.target as HTMLInputElement;
@@ -19,14 +20,20 @@
   function handleThemeChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     iconTheme = target.value;
+    getResultIconsImage();
   }
 
   function handlePerLineChange(event: Event) {
     const target = event.target as HTMLInputElement;
-    const value = parseInt(target.value);
+    const value: number = parseInt(target.value);
+
     if (!isNaN(value) && value >= 1 && value <= 50) {
       perLine = value;
     }
+  }
+
+  function getResultIconsImage() {
+    currentUrl = `/icons?i=${iconList.join(',')}${iconTheme === 'default' ? '' : `&t=${iconTheme}`}${perLine !== 15 ? `&perline=${perLine}` : ''}`;
   }
 </script>
 
@@ -40,10 +47,11 @@
       </span>
     </p>
   </div>
+
   <!-- Response -->
   <div class="border mb-4 border-neutral-300 p-4 rounded-lg bg-neutral-50">
     <p class="font-bold text-center">
-      {#if iconList.length === 0}
+      {#if iconList.length === 0 || currentUrl === "/icons?i="}
         No icons selected.
       {:else}
         Response Image:
@@ -51,6 +59,7 @@
       {/if}
     </p>
   </div>
+
   <!-- builder -->
   <div>
     <div class="text-center flex flex-row items-center gap-2 border border-neutral-300 p-4 rounded-lg bg-neutral-50">
@@ -80,17 +89,28 @@
         </button>
       </div>
     </div>
+
     <!-- icon list -->
     <div class="mt-4 border border-neutral-300 p-4 rounded-lg bg-neutral-50">
       <label for="iconInput" class="block mb-2 font-bold">Enter icon names (comma-separated):</label>
-      <input
-        id="iconInput"
-        type="text"
-        placeholder="e.g., icon1, icon2, icon3"
-        on:input={handleIconListChange}
-        class="w-full p-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+      <div class="flex flex-row">
+        <input
+          id="iconInput"
+          type="text"
+          placeholder="e.g., icon1, icon2, icon3"
+          on:input={handleIconListChange}
+          class="w-full p-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <!-- Check Button -->
+        <button
+          on:click={getResultIconsImage}
+          class="ml-2 bg-black font-bold text-white rounded-lg py-2 px-4"
+        >
+          Check
+        </button>
+      </div>
     </div>
+
     <!-- Theme Selection -->
     <div class="mt-4 border border-neutral-300 p-4 rounded-lg bg-neutral-50">
       <label for="themeInput" class="block mb-2 font-bold">Enter theme names (comma-separated):</label>
@@ -103,18 +123,28 @@
         <option value="light">light</option>
       </select>
     </div>
+
     <!-- Per Line (1~50) -->
     <div class="mt-4 border border-neutral-300 p-4 rounded-lg bg-neutral-50">
       <label for="perLineInput" class="block mb-2 font-bold">Icons per line (1~50):</label>
-      <input
-        id="perLineInput"
-        type="number"
-        min="1"
-        max="50"
-        value={perLine}
-        on:input={handlePerLineChange}
-        class="w-full p-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+      <div class="flex flex-row gap-2 items-center justify-between">
+        <input
+          id="perLineInput"
+          type="number"
+          min="1"
+          max="50"
+          value={perLine}
+          on:input={handlePerLineChange}
+          class="w-full p-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <!-- Apply Button -->
+        <button
+          on:click={getResultIconsImage}
+          class="bg-black text-white rounded-lg py-2 px-4 font-bold"
+        >
+          Apply
+        </button>
+      </div>
     </div>
   </div>
 </div>
