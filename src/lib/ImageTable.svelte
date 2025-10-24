@@ -79,7 +79,8 @@
 
     // console.log(resp);
 
-    const iconModules = testResp;
+    // const iconModules = testResp;
+    const iconModules: Record<string, string> = await resp.json();
 
     iconGroups.set(groupIcons(iconModules));
     isLoading = false;
